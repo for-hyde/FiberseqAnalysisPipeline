@@ -1,0 +1,12 @@
+rule all:
+    input:
+        #Need to define outputs from the files.
+        "results/"
+
+rule index_reference_genome:
+    input:
+        "resources/{reference}.fa"
+    output:
+        "resources/{reference}.fa.fai"
+    shell:
+        ""
