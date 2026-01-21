@@ -1,8 +1,19 @@
+configfile: "configfile.yaml"
+
+INPUT_DIR = config["samples_dir"]
+OUTPUT_DIR = config["output_dir"]
+
 rule all:
     input:
         #Need to define outputs from the files.
         "results/"
 
+rule map:
+    input:
+        f"{INPUT_DIR}/{{sample}}.fq"
+        f""
+
+        
 rule index_reference_genome:
     input:
         "resources/{reference}.fa"
