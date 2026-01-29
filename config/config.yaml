@@ -1,0 +1,4 @@
+#Change settings to file locations. Default are the folders in this directory.
+samples_dir: "resources"
+outuput_dir: "results"
+reference_name: "mm39"

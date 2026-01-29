@@ -1,23 +1,53 @@
-configfile: "configfile.yaml"
+import os
+
+configfile: "../config/config.yaml" #Points to config file with inputs
 
 INPUT_DIR = config["samples_dir"]
 OUTPUT_DIR = config["output_dir"]
+REF_NAME = config["reference_name"]
 
 rule all:
     input:
-        #Need to define outputs from the files.
-        "results/"
+        os.path.join(INPUT_DIR, "{REF_NAME}.fa.mmi") #Only for the indexing of the genome
 
-rule map:
-    input:
-        f"{INPUT_DIR}/{{sample}}.fq"
-        f""
 
-        
+#1. Reference and alignment
 rule index_reference_genome:
     input:
-        "resources/{reference}.fa"
+        ref = os.path.join(INPUT_DIR, f"{REF_NAME}.fa")
     output:
-        "resources/{reference}.fa.fai"
+        index = os.path.join(INPUT_DIR, "{REF_NAME}.fa.mmi")
+    singularity:
+        "docker://quay.io/pacbio/pbmm2:1.10.0"
+    params:
+        mem = "4G"
+    threads: 4
     shell:
-        ""
+        "pbmm2 index {input.ref} {output.index}"
+
+rule align_to_genome:
+    input: 
+        bam = os.path.join(INPUT_DIR, "{sample}.bam"),
+        ref = os.path.join(INPUT_DIR, "f{REF_NAME}.fa.mmi")
+    output:
+        aligned_bam = os.path.join(OUTPUT_DIR, "{sample}.aligned.bam")
+    singularity:
+        "docker://quay.io/pacbio/pbmm2:1.10.0"
+    threads: 16
+    params:
+        mem = "16G"
+    shell:
+        "pbmm2 align --{input.ref} {input.bam} {output.aligned}"
+
+
+"""
+1. Create reference
+2. Align to genome
+3. Seqeuncing QC
+4. Call MSPs/Add-Nucleosomes
+5. Fiber-seq QC
+6. Create Pileups
+7. Pileup to bedgraph to bigwig
+8. Create Heatmaps
+9+. Further anaylsis. 
+"""
